@@ -37,7 +37,7 @@ rename!(sap, [:date, :sap])
 # Drop missing dates (holidays)
 sap = sap[.~isnan.(sap.sap), :]
 # Need to attach historic data
-sap_hist = CSV.read(str_dir_git*"/applications/bvar_macro/SPX.csv", DataFrame)
+sap_hist = CSV.read(str_dir_git*"/applications/bvar_macro/data/SPX.csv", DataFrame)
 sap_hist = sap_hist[:, ["Date", "Close"]]
 rename!(sap_hist, [:date, :sap])
 sap_hist = sap_hist[sap_hist.date .>= Date("1984-12-31"), :] # Adust for dates available
@@ -84,7 +84,7 @@ dfwk = leftjoin(sap_wk, claims, on=:date_wk)
 dfwk = leftjoin(dfwk, epu_wk, on=:date_wk)
 dfwk = leftjoin(dfwk, yield_wk, on=:date_wk)
 # Write to the dataframe
-CSV.write(str_dir_git*"/applications/bvar_macro/df_wk.csv", dfwk)
+CSV.write(str_dir_git*"/applications/bvar_macro/data/df_wk.csv", dfwk)
 # ...........................................................................
 # Monthly data --------------------------------------------------------------
 
@@ -118,6 +118,6 @@ dfmo = leftjoin(dfmo, pceall, on=:date)
 dfmo = leftjoin(dfmo, unemp, on=:date)
 dfmo = leftjoin(dfmo, suemp, on=:date)
 # Write to the dataframe
-CSV.write(str_dir_git*"/applications/bvar_macro/df_mo.csv", dfmo)
+CSV.write(str_dir_git*"/applications/bvar_macro/data/df_mo.csv", dfmo)
 
 # Excit the application
