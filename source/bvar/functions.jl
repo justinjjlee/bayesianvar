@@ -172,8 +172,8 @@ function bvar_base(Yraw, params)
             error("Wrong choice of forecast_method")
         end
     else
-    Y1 = Yraw;
-    Y2 = Yraw;
+        Y1 = Yraw;
+        Y2 = Yraw;
     end
 
     # Generate lagged Y matrix. This will be part of the X matrix
@@ -213,10 +213,14 @@ function bvar_base(Yraw, params)
             Z = kron(eye(M),X);
             T = T - 1;
         else # Iterated forecasts, we keep the last h observations
-            Y = Y1[1:end-h,:];
-            X = X1[1:end-h,:];
-            Z = kron(eye(M),X);
-            T = T - h;
+            #Y = Y1[1:end-h,:];
+            #X = X1[1:end-h,:];
+            #Z = kron(eye(M),X);
+            #T = T - h;
+            # Forecast to be steps ahead
+            Y = Y1;
+            X = X1;
+            Z = Z1;
         end
     else
         Y = Y1;
@@ -432,7 +436,7 @@ function bvar_base(Yraw, params)
                                 # predictions. Dependent on the horizon, use the previous                       
                                 # forecasts to create the new right-hand side variables
                                 # which is used to evaluate the next forecast.                       
-                                X_new_temp = [1 Y_hat X_fore[:,2:M*(p-i)+1]];
+                                X_new_temp = [1 Y_hat X_new_temp[:,2:M*(p-i)+1]]; #--------------------------------- This changed from X_fore to X_new_temp
                                 # This gives the forecast T+i for i=1,..,p                       
                                 Y_temp = X_new_temp*ALPHA + randn(1,M)*chol(SIGMA)';                       
                                 Y_hat = [Y_hat Y_temp];
@@ -449,7 +453,8 @@ function bvar_base(Yraw, params)
                     ypred_draws[irep-nburn, :,:] = Y_temp2;
                     # Predictive likelihood
                     p_mu_hat = vec(X_new_temp*ALPHA)
-                    logp_iter = pdf(MvNormal(p_mu_hat, Hermitian(SIGMA)), Y1[T+1,:])
+                    #logp_iter = pdf(MvNormal(p_mu_hat, Hermitian(SIGMA)), Y1[T+1,:])
+                    logp_iter = pdf(MvNormal(p_mu_hat, Hermitian(SIGMA)), Y1[end,:])
                     PL[irep-nburn,:] .= logp_iter
                     logp_draws[irep-nburn,:] .= logp_iter
 
@@ -531,5 +536,5 @@ function bvar_base(Yraw, params)
 
 
     # Return values
-    return ALPHA_draws, SIGMA_draws, ypred_draws, X, Y
+    return ALPHA_draws, SIGMA_draws, ypred_draws, irf_draws, X, Y
 end
