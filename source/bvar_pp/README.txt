@@ -1,3 +1,11 @@
+# Code for Pandemic Prior
+
+This is a repository copy of code authored and written by Danilo Cascaldi-Garcia/
+
+This repository contains the author's code and make edits for my application and do NOT claim authorship of the original work. To reference the original paper and code, reference the [author's website](https://sites.google.com/site/cascaldigarcia/pandemic-priors-bvar).
+
+______________________________________
+
 Files and replication JULIA codes of Cascaldi-Garcia, D., "Pandemic Priors"
 
 Use of code for research purposes is permitted as long as proper reference to source is given.
