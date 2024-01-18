@@ -5,4 +5,4 @@ The execution code is a direct translation from the MATLAB codes published by [C
 
 The sample output is based on a derivation of works, that includes my identification of price spread to capture the market demand shock as a separate identification strategy.
 
- ![workflow](./results/fig_hd_output.pdf)
+[Sample output of historical decomposition of output in supply shocks to display shale boom impact.](./results/fig_hd_output.pdf)
