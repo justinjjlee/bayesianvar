@@ -6,7 +6,7 @@
  * 'Big-data' or large dimension models
  * Structural identification (partial-equilibrium)
 
- A lot of the research and source codes are mainly written in MATLAB. The purpose of this repository is to direct-transalte those source codes from academic research and codes publicly available into open-sourced [julia programming languge](https://julialang.org/).
+ A lot of the research and source codes are mainly written in MATLAB. The purpose of this repository is to direct-transalte those source codes from academic research and codes publicly available into open-sourced [julia programming languge](https://julialang.org/). This repository does not claim original authorship of the algorithms translated and used, and I recommend users to see the original research cited below.
 
  This repository also includes applications of the models, such as estimation of impulse responses, foreasting, and scenarios/simulations.
 
