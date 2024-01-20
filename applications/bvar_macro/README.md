@@ -9,6 +9,8 @@ Application of Bayesian (Structural) Vector Autoregressive (VAR) models in build
 ## Projection Visualization
 The projections are based on the latest available data at the time of last repository-updated run forecasts. This repository is not be updated in weekly frequency.
 
+Model is fit and forecasts projected in year-over-year growth rate of the weekly frequency data.
+
 ![Projection - Weekly Unemployment Claims](./results/projections/proj_claims.png)
 ![Projection - S&P 500 Index Growth](./results/projections/proj_sap.png)
 ![Projection - Economic Policy Uncertainty](./results/projections/proj_epu.png)

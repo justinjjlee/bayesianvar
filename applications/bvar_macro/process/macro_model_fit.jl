@@ -13,7 +13,7 @@ Random.seed!(1234)
 using Plots
 cd(@__DIR__)
 # Data location in application
-str_dir_git = splitdir(splitdir(pwd())[1])[1]
+str_dir_git = splitdir(splitdir(splitdir(pwd())[1])[1])[1]
 # Pull bvar functions 
 include(str_dir_git*"/source/bvar/functions.jl")
 # ================================================================================================
@@ -24,8 +24,7 @@ include(str_dir_git*"/source/bvar/functions.jl")
 #       Stock market and uncertainty
 # ================================================================================================
 # Data update and save
-cd(@__DIR__)
-include("./data/proc_data_macro.jl")
+include(str_dir_git*"/applications/bvar_macro/data/proc_data_macro.jl")
 # ================================================================================================
 # Fitness 
 # ................................................................................................
@@ -148,14 +147,22 @@ t_lookback = 52 * 2
 plot_y = y[end-t_lookback:end, :]
 plot_y[:, "time"] = t[end-t_lookback:end]
 
+str_titles =[
+    "S&P 500",
+    "Unemployment Claims - New",
+    "Economic Policy Uncertainty",
+    "Short-term Treasury Yields"
+]
+
 # Plot the projections
 for iter_col in 1:k
     iter_name = names(plot_y)[iter_col]
-    plot(plot_y[:,"time"], plot_y[:,iter_col], label=iter_name, dpi=300)
+    plot(plot_y[:,"time"], plot_y[:,iter_col], label="Actual", dpi=300)
     plot!(df_proj[:,"time"], df_proj[:,iter_col], 
         label="Projection - Vintage", color=:orange,
-        linewidth = 3
+        linewidth = 3,
         )
+    hline!([0], color=:black, label=false, linewidth=1, linestyle=:dash)
     plot!(plot_yhat_median[:,"time"], plot_yhat_median[:,iter_col],
         color=:orange, linestyle =:dot,
         ribbon=(
@@ -163,8 +170,55 @@ for iter_col in 1:k
             yhat_fit_ub[:,iter_col] .- plot_yhat_median[:,iter_col]),
         label = "Projection - Latest",fc=:orange, fa=0.3, linewidth = 2
     )
+    title!("Rolling Forecast Tracker: "*str_titles[iter_col])
     savefig(str_dir_git*"/applications/bvar_macro/results/projections/proj_$(iter_name).png")
 end
+
+#=
+# Sample Evaluation 
+# .............................................................................................................
+# Bootstrap draws ---------------------------------------------------------------------------------------------
+global boot_A = zeros(testparam.nsave, testparam.constant+(testparam.p*k), k, boot_n)
+global boot_Σ = zeros(testparam.nsave, k, k, boot_n)
+global boot_ŷ = zeros(testparam.nsave, testparam.h, k, boot_n)
+global boot_ϕ = zeros(testparam.nsave, k, k, testparam.ihor, boot_n)
+# Below should be distributed computing 
+
+# Bootstrap iteration
+#@sync @distributed 
+print("Bootstrap Sampling Calibration")
+for iter_boot in 1:boot_n
+    # Randomly select the sample period on bootstratp
+    # Starting with the sample period
+    #   Preserving the least required bootstrap
+    boot_t_start = rand(1:(size(y)[1] - boot_t + 1))
+    boot_t_end   = boot_t_start + boot_t - 1
+    # Select the period sought
+    y_boot = y[boot_t_start:boot_t_end, :]
+
+    # Model build
+    ALPHA_boot, SIGMA_boot, ypred_boot,# irf_boot,
+        X_boot, Y_boot = bvar_base(Matrix{Float64}(y_boot), testparam)
+
+    # Save the result - iteration 
+    global boot_A[:,:,:,iter_boot] = ALPHA_boot
+    global boot_Σ[:,:,:,iter_boot] = SIGMA_boot
+    global boot_ŷ[:,:,:,iter_boot] = ypred_boot
+    #global boot_ϕ[:,:,:,:,iter_boot] = irf_boot
+end
+
+# Save to file ------------------------------------------------------------------------------------------------
+save(str_dir_git*"/applications/bvar_macro/results/simulation.jld",
+    "ALPHA_draws", ALPHA_draws,
+    "SIGMA_draws", SIGMA_draws, 
+    "ypred_draws", ypred_draws,
+    "irf_draws", irf_draws,
+    "boot_A", boot_A,
+    "boot_Σ", boot_Σ,
+    "boot_ŷ", boot_ŷ,
+    "boot_ϕ", boot_ϕ
+)
+=#
 
 #(TBD)
 # Generalized impulse response calculation 
