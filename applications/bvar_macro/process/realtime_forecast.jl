@@ -45,6 +45,7 @@ dfmod = log.(df[δ_diff:end,2:end]) .- log.(df[1:end-δ_diff+1,2:end])
 # Use the complete case of rows 
 y = dfmod[completecases(dfmod), :]
 # For real-time measures of incomplete data
+#   Depending on when you run the data, this dataframe would be empty
 ỹ = dfmod[map(!,completecases(dfmod)),:]
 
 # Paramter defined
@@ -57,18 +58,18 @@ T, k = size(y) # Total calibration data size
 testparam = bvar_params(
     constant = true,     # true: if you desire intercepts, false: otherwise 
     p = 7,               # Number of lags on dependent variables
-    differenced = true, # Is the data differenced?
+    differenced = true,  # Is the data differenced?
     forecasting = true,  # true: Compute h-step ahead predictions, false: no prediction
     quantile_ci = 0.05,  # confidence interval quantile range
     forecast_method = 1, # 0: Direct forecasts/1: Iterated forecasts
-    repfor = 10,         # Number of times to obtain a draw from the predictive 
-                        #  density, for each generated draw of the parameters
-    h = 5,              # Number of forecast periods
+    repfor = 20,         # Number of times to obtain a draw from the predictive 
+                         #  density, for each generated draw of the parameters
+    h = 3,               # h-period ahead forecast: medium term average
     impulses = true,     # true: compute impulse responses, false: no impulse responses
     ihor = 21,           # Horizon to compute impulse responses
     # Set prior for BVAR model:
     prior = 2,           # prior = 1 --> Indepependent Normal-Whishart Prior
-                        # prior = 2 --> Indepependent Minnesota-Whishart Prior
+                         # prior = 2 --> Indepependent Minnesota-Whishart Prior
     # Gibbs-related preliminaries
     nsave = 1000,         # Final number of draws to saves
     nburn = 200           # Draws to discard (burn-in)
@@ -99,7 +100,7 @@ end
 yhat_fit_mean = median(yhat_fit, dims = 1)[1,:,:]
 
 # =============================================================================================================
-# Projections 
+# Projections: for T+h horizon (medium run average expectation)
 # .............................................................................................................
 # Process projections
 # Projections and confidence band calculation, quantile confidence band
@@ -170,7 +171,7 @@ for iter_col in 1:k
             yhat_fit_ub[:,iter_col] .- plot_yhat_median[:,iter_col]),
         label = "Projection - Latest",fc=:orange, fa=0.3, linewidth = 2
     )
-    title!("Rolling Forecast Tracker: "*str_titles[iter_col])
+    title!("3-week Ahead Forecase: "*str_titles[iter_col])
     savefig(str_dir_git*"/applications/bvar_macro/results/projections/proj_$(iter_name).png")
 end
 
@@ -219,7 +220,3 @@ save(str_dir_git*"/applications/bvar_macro/results/simulation.jld",
     "boot_ϕ", boot_ϕ
 )
 =#
-
-#(TBD)
-# Generalized impulse response calculation 
-# https://ken-nyholm.com/Matlab/GIRF/GIRF.html#:~:text=Generalised%20impulse%20response%20functions%20(GIRFs,koop%20et%20al%20(1996)).

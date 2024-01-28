@@ -6,14 +6,14 @@ using CSV, DataFrames
 # Warning, HTTP version has to be the latest
 # ] add HTTP@1.10.1
 # Set working directory
-cd(@__DIR__)
+#cd(@__DIR__)
 
 # Data location in application
-str_dir_git = splitdir(splitdir(splitdir(pwd())[1])[1])[1]
+str_dir = splitdir(splitdir(splitdir(splitdir(pwd())[1])[1])[1])[1]
 
 # Import credential locally for FRED & BLS API
-apikeys = JSON.parsefile(str_dir_git*"/source/credential.json")
-api_key_fred = apikeys["api_key_fred"]
+apikeys = JSON.parsefile(str_dir*"/credential.json")
+api_key_fred = apikeys["credentials"]["api_key_fred"]
 
 api_fred = Fred(api_key_fred);
 # Specific date for mapping
@@ -32,7 +32,7 @@ sap = FredData.get_data(api_fred, "SP500"; observation_start = "2020-11-05")
 sap = sap.data[:,["date", "value"]]
 rename!(sap, [:date, :sap])
 # Drop missing dates (holidays)
-sap = sap[.~isnan.(sap.sap), :]
+sap = filter(row -> all(x -> !(x isa Number && isnan(x)), row), sap)
 # Need to attach historic data
 sap_hist = CSV.read(str_dir_git*"/applications/bvar_macro/data/SPX.csv", DataFrame)
 sap_hist = sap_hist[:, ["Date", "Close"]]
@@ -59,7 +59,7 @@ epu = FredData.get_data(api_fred, "USEPUINDXD"; observation_start = date_start)
 epu = epu.data[:,["date", "value"]]
 rename!(epu, [:date, :epu])
 # Drop missing dates (holidays)
-epu = epu[.~isnan.(epu.epu), :]
+epu = filter(row -> all(x -> !(x isa Number && isnan(x)), row), epu)
 # Get start of date MOnday week date
 epu[:,"date_wk"] = Dates.firstdayofweek.(epu.date)
 # Aggregate to weekly frequency
@@ -70,7 +70,7 @@ yield = FredData.get_data(api_fred, "DGS10"; observation_start = date_start)
 yield = yield.data[:, ["date", "value"]]
 rename!(yield, [:date, :yield])
 # Drop missing dates (holidays)
-yield = yield[.~isnan.(yield.yield), :]
+yield = filter(row -> all(x -> !(x isa Number && isnan(x)), row), yield)
 # Get start of date MOnday week date
 yield[:,"date_wk"] = Dates.firstdayofweek.(yield.date)
 # Aggregate to weekly frequency
